@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}HireChain - Find Your Dream Job{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Connect. Grow. Succeed.</h1>
+                <p class="hero-subtitle">Find your dream job with HireChain</p>
+                
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Search by keywords, company, or location..."
+                        id="jobSearch"
+                    >
+                    <button class="btn btn-primary search-btn">Find Jobs</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Jobs Section -->
+    <section class="jobs-section">
+        <div class="container">
+            <h2 class="section-title">Latest Job Openings</h2>
+            
+            <div class="jobs-grid" id="jobsGrid">
+                {% for job in jobs %}
+                    <div class="job-card" data-job-id="{{ job.id }}">
+                        <div class="job-card-header">
+                            <div class="company-icon">
+                                {% if job.company_name == 'Innovate Corp' %}
+                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                        <rect width="40" height="40" rx="8" fill="#4F46E5"/>
+                                        <path d="M12 28V12H16V28H12ZM20 28V12H24V28H20Z" fill="white"/>
+                                    </svg>
+                                {% elif job.company_name == 'Global Tech' %}
+                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                        <rect width="40" height="40" rx="8" fill="#2563EB"/>
+                                        <path d="M20 10L12 18H16V30H24V18H28L20 10Z" fill="white"/>
+                                    </svg>
+                                {% else %}
+                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                        <rect width="40" height="40" rx="8" fill="#7C3AED"/>
+                                        <circle cx="20" cy="20" r="8" fill="white"/>
+                                    </svg>
+                                {% endif %}
+                            </div>
+                            <div class="job-info">
+                                <h3 class="job-title">{{ job.title }}</h3>
+                                <p class="company-name">{{ job.company_name }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="job-card-body">
+                            <div class="job-location">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M8 0a6 6 0 00-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z"/>
+                                </svg>
+                                {{ job.location }}
+                            </div>
+                            <p class="job-posted">Posted {{ job.posted_date|timesince }} ago</p>
+                        </div>
+                        
+                        <button class="btn btn-primary btn-block view-details-btn" onclick="viewJobDetails({{ job.id }})">
+                            View Details
+                        </button>
+                    </div>
+                {% empty %}
+                    <div class="no-jobs">
+                        <p>No job openings available at the moment.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Job Details Modal -->
+<div class="modal" id="jobModal">
+    <div class="modal-overlay" onclick="closeJobModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalJobTitle">Software Specialist</h2>
+            <button class="modal-close" onclick="closeJobModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-info">
+                <p><strong>Company:</strong> <span id="modalCompany"></span></p>
+                <p><strong>Location:</strong> <span id="modalLocation"></span></p>
+                <p><strong>Job Type:</strong> <span id="modalJobType"></span></p>
+                <p><strong>Salary Range:</strong> <span id="modalSalary"></span></p>
+            </div>
+            
+            <div class="modal-section">
+                <h3>Description</h3>
+                <p id="modalDescription"></p>
+            </div>
+            
+            <div class="modal-section" id="requirementsSection">
+                <h3>Requirements</h3>
+                <p id="modalRequirements"></p>
+            </div>
+            
+            <div class="modal-section" id="responsibilitiesSection">
+                <h3>Responsibilities</h3>
+                <p id="modalResponsibilities"></p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeJobModal()">Close</button>
+            <button class="btn btn-primary" onclick="applyForJob()" id="applyBtn">Apply</button>
+        </div>
+    </div>
+</div>
+
+<!-- Application Modal -->
+<div class="modal" id="applicationModal">
+    <div class="modal-overlay" onclick="closeApplicationModal()"></div>
+    <div class="modal-content application-modal-content">
+        <div class="modal-header">
+            <h2>Apply for <span id="appJobTitle"></span></h2>
+            <button class="modal-close" onclick="closeApplicationModal()">&times;</button>
+        </div>
+        <form id="applicationForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="fullName">Full Name *</label>
+                    <input type="text" id="fullName" name="full_name" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" name="phone" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="linkedin">LinkedIn Profile</label>
+                    <input type="url" id="linkedin" name="linkedin" class="form-input" placeholder="https://linkedin.com/in/yourprofile">
+                </div>
+                
+                <div class="form-group">
+                    <label for="portfolio">Portfolio URL</label>
+                    <input type="url" id="portfolio" name="portfolio" class="form-input" placeholder="https://yourportfolio.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="resume">Resume *</label>
+                    <input type="file" id="resume" name="resume" class="form-file-input" accept=".pdf,.doc,.docx" required>
+                    <small class="form-help">Accepted formats: PDF, DOC, DOCX</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="coverLetter">Cover Letter</label>
+                    <textarea id="coverLetter" name="cover_letter" class="form-textarea" rows="5" placeholder="Tell us why you're a great fit for this position..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeApplicationModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="submitApplicationBtn">Submit Application</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/jobs.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Post New Job - HireChain{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>Post New Job</h1>
+        <a href="{% url 'applications:admin_applications' %}" class="btn btn-outline">Back to Applications</a>
+    </div>
+    
+    <div class="job-form-container">
+        <form method="POST" id="jobForm" class="job-form">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}">Job Title *</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <span class="form-error">{{ form.title.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.company_name.id_for_label }}">Company Name *</label>
+                    {{ form.company_name }}
+                    {% if form.company_name.errors %}
+                        <span class="form-error">{{ form.company_name.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.location.id_for_label }}">Location *</label>
+                    {{ form.location }}
+                    {% if form.location.errors %}
+                        <span class="form-error">{{ form.location.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.job_type.id_for_label }}">Job Type *</label>
+                    {{ form.job_type }}
+                    {% if form.job_type.errors %}
+                        <span class="form-error">{{ form.job_type.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.salary_range.id_for_label }}">Salary Range</label>
+                {{ form.salary_range }}
+                {% if form.salary_range.errors %}
+                    <span class="form-error">{{ form.salary_range.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Job Description *</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <span class="form-error">{{ form.description.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.requirements.id_for_label }}">Requirements</label>
+                {{ form.requirements }}
+                {% if form.requirements.errors %}
+                    <span class="form-error">{{ form.requirements.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.responsibilities.id_for_label }}">Responsibilities</label>
+                {{ form.responsibilities }}
+                {% if form.responsibilities.errors %}
+                    <span class="form-error">{{ form.responsibilities.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group checkbox-group">
+                <label>
+                    {{ form.is_active }}
+                    Active (Job will be visible to job seekers)
+                </label>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Post Job</button>
+                <a href="{% url 'jobs:home' %}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('jobForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "jobs:create_job" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = '{% url "jobs:home" %}';
+        } else {
+            alert('Error: ' + JSON.stringify(data.errors));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while posting the job.');
+    });
+});
+</script>
+{% endblock %}

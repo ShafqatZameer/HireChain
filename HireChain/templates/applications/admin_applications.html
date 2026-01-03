@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Applicant Management - HireChain{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>Applicant Management</h1>
+        <a href="{% url 'jobs:create_job' %}" class="btn btn-primary">Post New Job</a>
+    </div>
+    
+    <div class="admin-controls">
+        <div class="search-box">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/>
+            </svg>
+            <input type="text" placeholder="Search" id="searchInput" class="search-input">
+        </div>
+        
+        <div class="filter-box">
+            <button class="btn btn-outline filter-btn" id="filterBtn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3 3a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-.293.707L12 10.414V17a1 1 0 01-.447.894l-4 2A1 1 0 016 19v-8.586L1.293 5.707A1 1 0 011 5V3z"/>
+                </svg>
+                Filter
+            </button>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table class="applicants-table">
+            <thead>
+                <tr>
+                    <th>Applicant Name</th>
+                    <th>Job Applied For</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Resume</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="applicantsTableBody">
+                {% for application in applications %}
+                <tr class="applicant-row" data-application-id="{{ application.id }}" onclick="viewApplicationDetails({{ application.id }})">
+                    <td>{{ application.full_name }}</td>
+                    <td>
+                        <a href="#" class="job-link">{{ application.job.title }}</a>
+                    </td>
+                    <td>{{ application.email }}</td>
+                    <td>{{ application.phone }}</td>
+                    <td>
+                        {% if application.resume %}
+                            <a href="{{ application.resume.url }}" target="_blank" class="resume-link" onclick="event.stopPropagation()">
+                                in/{{ application.full_name|lower|cut:" "|truncatechars:10 }}
+                            </a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ application.status }}">
+                            {{ application.get_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="no-data">No applications found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="pagination">
+        <p>Page 1 of 5</p>
+    </div>
+</div>
+
+<!-- Applicant Details Modal -->
+<div class="modal" id="applicantModal">
+    <div class="modal-overlay" onclick="closeApplicantModal()"></div>
+    <div class="modal-content applicant-modal-content">
+        <div class="modal-header">
+            <h2>Applicant Details</h2>
+            <button class="modal-close" onclick="closeApplicantModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="applicant-info">
+                <div class="info-row">
+                    <strong>Full Name:</strong>
+                    <span id="detailFullName"></span>
+                </div>
+                <div class="info-row">
+                    <strong>Email:</strong>
+                    <a id="detailEmail" href="#" class="info-link"></a>
+                </div>
+                <div class="info-row">
+                    <strong>Phone:</strong>
+                    <a id="detailPhone" href="#" class="info-link"></a>
+                </div>
+                <div class="info-row">
+                    <strong>LinkedIn:</strong>
+                    <a id="detailLinkedin" href="#" target="_blank" class="info-link"></a>
+                </div>
+                <div class="info-row">
+                    <strong>Portfolio:</strong>
+                    <span id="detailPortfolio"></span>
+                </div>
+                <div class="info-row">
+                    <strong>Cover Letter:</strong>
+                    <p id="detailCoverLetter" class="cover-letter-text"></p>
+                </div>
+            </div>
+            
+            <div class="status-update">
+                <h3>Update Status</h3>
+                <div class="status-buttons">
+                    <button class="btn btn-status badge-reviewing" onclick="updateStatus('reviewing')">Reviewing</button>
+                    <button class="btn btn-status badge-interview_scheduled" onclick="updateStatus('interview_scheduled')">Interview Scheduled</button>
+                    <button class="btn btn-status badge-rejected" onclick="updateStatus('rejected')">Rejected</button>
+                </div>
+            </div>
+            
+            <div class="resume-download">
+                <label>
+                    <input type="checkbox" id="downloadResumeCheck">
+                    Download Resume
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="closeApplicantModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin.js' %}"></script>
+{% endblock %}
