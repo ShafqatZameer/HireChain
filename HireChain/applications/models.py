@@ -47,3 +47,24 @@ class Application(models.Model):
             'rejected': 'badge-rejected',
         }
         return status_classes.get(self.status, 'badge-default')
+
+
+class Notification(models.Model):
+    """
+    Notification model to store user notifications.
+    Follows Single Responsibility Principle - handles notification data.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'notifications'
+        ordering = ['-created_at']
+        verbose_name = 'Notification'
+        verbose_name_plural = 'Notifications'
+    
+    def __str__(self):
+        return f"Notification for {self.user.username} - {self.message[:50]}"
