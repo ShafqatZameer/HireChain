@@ -25,7 +25,7 @@ HireChain is a modern job portal that bridges the gap between HR professionals a
 - **Backend**: Django 6.0
 - **Frontend**: HTML5, CSS3 (with CSS Variables for theming), JavaScript (ES6+)
 - **Database**: SQLite (development) - easily switchable to PostgreSQL/MySQL
-- **Architecture**: SOLID principles, MVC pattern
+- **Architecture**: SOLID principles, MVT pattern
 
 ## 📁 Project Structure
 
